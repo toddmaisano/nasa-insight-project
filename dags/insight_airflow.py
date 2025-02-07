@@ -56,30 +56,47 @@ def transform_insight_data(**kwargs):
     ti = kwargs['ti']
     data = ti.xcom_pull(key='insight_api_data')
 
+    # Extract all sols
     sol_keys = data.get("sol_keys", [])
 
+    # Initialize a list to store processed data
     weather_data = []
 
     # Process each sol
     for sol in sol_keys:
         sol_data = data.get(sol, {})
-
+    
+        # Extract Atmospheric Temperature (AT), Horizontal Wind Speed (HWS), and Pressure (PRE)
+        at_data = sol_data.get("AT", {})
+        hws_data = sol_data.get("HWS", {})
+        pre_data = sol_data.get("PRE", {})
+    
+        # Extract Wind Direction (WD) most common
+        wd_most_common = sol_data.get("WD", {}).get("most_common", {})
+    
+        # Extract relevant fields
         row = {
             "Sol": sol,
             "First_UTC": sol_data.get("First_UTC", "N/A"),
             "Last_UTC": sol_data.get("Last_UTC", "N/A"),
-            "Avg_Temp": sol_data.get("AT", {}).get("av", "N/A"),
-            "Min_Temp": sol_data.get("AT", {}).get("mn", "N/A"),
-            "Max_Temp": sol_data.get("AT", {}).get("mx", "N/A"),
-            "Avg_Wind_Speed": sol_data.get("HWS", {}).get("av", "N/A"),
-            "Max_Wind_Speed": sol_data.get("HWS", {}).get("mx", "N/A"),
-            "Avg_Pressure": sol_data.get("PRE", {}).get("av", "N/A"),
-            "Max_Pressure": sol_data.get("PRE", {}).get("mx", "N/A"),
+            "Month_Ordinal": sol_data.get("Month_ordinal", "N/A"),
             "Season": sol_data.get("Season", "N/A"),
             "Northern_Season": sol_data.get("Northern_season", "N/A"),
             "Southern_Season": sol_data.get("Southern_season", "N/A"),
+            "Avg_Temp": at_data.get("av", "N/A"),
+            "Min_Temp": at_data.get("mn", "N/A"),
+            "Max_Temp": at_data.get("mx", "N/A"),
+            "Avg_Wind_Speed": hws_data.get("av", "N/A"),
+            "Min_Wind_Speed": hws_data.get("mn", "N/A"),
+            "Max_Wind_Speed": hws_data.get("mx", "N/A"),
+            "Avg_Pressure": pre_data.get("av", "N/A"),
+            "Min_Pressure": pre_data.get("mn", "N/A"),
+            "Max_Pressure": pre_data.get("mx", "N/A"),
+            "Most_Common_Wind_Dir": wd_most_common.get("compass_point", "N/A"),
+            "Most_Common_Wind_Degrees": wd_most_common.get("compass_degrees", "N/A"),
+            "Most_Common_Wind_Ct": wd_most_common.get("ct", "N/A"),
         }
-
+    
         weather_data.append(row)
 
     # Convert to DataFrame
